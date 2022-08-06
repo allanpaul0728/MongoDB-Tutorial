@@ -38,21 +38,21 @@ async function main() {
                 '$gte': parseInt(req.query.min_rating)
             }
         }
-        console.log("criteria=", criteria);
         const reviews = await db.collection('reviews').find(criteria).toArray();
         res.json(reviews);
     })
 
     // CREATE section of CRUD
     app.post('/reviews', async function(req,res) {
-        await db.collection('reviews').insertOne({
+        const result = await db.collection('reviews').insertOne({
             "title": req.body.title,
             "food": req.body.food,
             "content": req.body.content,
             "rating": req.body.rating
         })
         res.json({
-            'message': 'ok'
+            'message': 'successfully created',
+            'result': result
         })
     })
 
@@ -62,7 +62,7 @@ async function main() {
             '_id':ObjectId(req.params.reviewId)
         })
         
-        await db.collection('reviews').updateOne({
+        const result = await db.collection('reviews').updateOne({
             '_id': ObjectId(req.params.reviewId)
         },{
             '$set': {
@@ -73,7 +73,18 @@ async function main() {
             }
         })
         res.json ({
-            'message': 'put received'
+            'message': 'successfully updated',
+            'result': result
+        })
+    })
+
+    // DELETE section of CRUD
+    app.delete('/reviews/:reviewId', async function(req, res) {
+        await db.collection('reviews').deleteOne({
+            '_id': ObjectId(req.params.reviewId)
+        })
+        res.json ({
+            'message':'successfully deleted'
         })
     })
 }
