@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-console.log(process.env);
 const mongoUtil = require('./MongoUtil');
 const { ObjectId } = require('mongodb');
 
@@ -89,6 +88,26 @@ async function main() {
             'message':'successfully deleted'
         })
     })
+
+    // This section is to add embedded document on a certain Object Id
+    app.post('/reviews/:reviewdId/comments', async function(req, res) {
+        const result = await db.collection('reviews').updateOne({
+            '_id': ObjectId(req.params.reviewId)
+        }, {
+            '$push': {
+                'comments':{
+                    '_id': ObjectId(),
+                    'content': req.body.content,
+                    'nickname': req.body.nickname
+                }
+            }
+        })
+        res.json({
+            'message':'successfully added document',
+            'result': result
+        })
+    })
+    
 }
 
 main();
