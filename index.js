@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config();
+console.log(process.env);
 const mongoUtil = require('./MongoUtil');
 const { ObjectId } = require('mongodb');
 
@@ -8,8 +10,8 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const MONGO_URI = "mongodb+srv://allanpaul0728:0728CarBon@cluster0.2cu2q.mongodb.net/?retryWrites=true&w=majority";
-const DB_NAME = "sample_reviews";
+const MONGO_URI = process.env.MONGO_URI;
+const DB_NAME = process.env.DB_NAME;
 
 async function main() {
     const db = await mongoUtil.connect(MONGO_URI, DB_NAME);
