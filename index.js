@@ -18,7 +18,7 @@ async function main() {
 
     app.get('/', function(req,res) {
         res.json({
-            'message':'I love cupcakes and candies'
+            'message':'Yes, its working'
         })
     })
 
@@ -39,7 +39,15 @@ async function main() {
                 '$gte': parseInt(req.query.min_rating)
             }
         }
-        const reviews = await db.collection('reviews').find(criteria).toArray();
+        const reviews = await db.collection('reviews').find(criteria, {
+            'projection': {
+                '_id': 1,
+                'food': 1,
+                'title': 1,
+                'content': 1,
+                'rating': 1
+            }
+        }).toArray();
         res.json(reviews);
     })
 
@@ -90,7 +98,7 @@ async function main() {
     })
 
     // This section is to add embedded document on a certain Object Id
-    app.post('/reviews/:reviewdId/comments', async function(req, res) {
+    app.post('/reviews/:reviewId/comments', async function(req, res) {
         const result = await db.collection('reviews').updateOne({
             '_id': ObjectId(req.params.reviewId)
         }, {
@@ -104,6 +112,46 @@ async function main() {
         })
         res.json({
             'message':'successfully added document',
+            'result': result
+        })
+    })
+    // This section is to get the information including the sub-documents
+    app.get('/reviews/:reviewId', async function(req,res) {
+        const review = await db.collection('reviews').findOne({
+            '_id':ObjectId(req.params.reviewId)
+        })
+        res.json(review);
+    })
+
+    // This section is to update the added comment on a certain Object Id
+    app.put('/comments/:commentId', async function(req, res) {
+        const result = await db.collection('reviews').updateOne({
+            'comments._id':ObjectId(req.params.commentId)
+        },{
+            '$set': {
+                'comments.$.content': req.body.content,
+                'comments.$.nickname': req.body.nickname
+            }
+        })
+        res.json({
+            'message':'successfully updated the embedded comment',
+            'result': result
+        })
+    })
+
+    // This section is to delete the certain sub-document or embedded comment
+    app.delete('/comments/:commentId', async function(req, res) {
+        const result = await db.collection('reviews').updateOne({
+            'comments._id':ObjectId(req.params.commentId)
+        }, {
+            '$pull': {
+                'comments': {
+                    '_id':ObjectId(req.params.commentId)
+                }
+            }
+        })
+        res.json({
+            'message':'comment successfully deleted',
             'result': result
         })
     })
